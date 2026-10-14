@@ -1,613 +1,1105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Praveen C Immanvel | System Administrator</title>
-  <style>
+  <title>Praveen C Immanvel | System Administrator & Infrastructure Engineer</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            gold: {
+              100: '#FFF8E1',
+              200: '#FFECB3',
+              300: '#FFE082',
+              400: '#FFD54F',
+              500: '#D4AF37', // Premium Metallic Gold
+              600: '#B8860B',
+              700: '#996515',
+              800: '#66420B',
+              900: '#332105'
+            },
+            dark: {
+              950: '#030305',
+              900: '#08090C',
+              850: '#0E1017',
+              800: '#131622',
+              700: '#1C2132'
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'shimmer': 'shimmer 2.5s infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            shimmer: {
+              '100%': { transform: 'translateX(100%)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
 
-    /* GOLDEN BLACK THEME */
+  <style>
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #030305;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #332105;
+      border-radius: 4px;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D4AF37;
+    }
 
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #000000, #0a0a0a);
-      color: #f5f5f5;
-      line-height: 1.6;
+      background-color: #030305;
+      color: #E2E8F0;
+      overflow-x: hidden;
     }
 
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 30px;
-      background: linear-gradient(135deg, #000000, #111111);
-      padding: 40px;
-      text-align: center;
-      border-bottom: 1px solid #d4af37;
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    /* Fixed WebGL Background Canvas with Z-Index below content */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
     }
 
-    .profile-container {
-      text-align: center;
-      max-width: 600px;
+    /* 3D Perspective Context for Cards */
+    .perspective-container {
+      perspective: 1200px;
     }
 
-    .profile-img {
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #d4af37;
-      box-shadow: 0 0 25px rgba(212,175,55,0.6);
-      background: linear-gradient(135deg, #000, #1a1a1a);
-      padding: 5px;
+    /* Dark Gold Glassmorphism Cards */
+    .glass-card-3d {
+      background: rgba(14, 16, 23, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px 0 rgba(212, 175, 55, 0.05);
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+      position: relative;
     }
 
-    .profile-img:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 40px rgba(212,175,55,0.9);
-      transition: 0.4s;
+    /* Dynamic Highlight Overlay on Hover */
+    .glass-card-3d::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212, 175, 55, 0.15), transparent 40%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 2;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 40px;
-      color: #d4af37;
-      letter-spacing: 2px;
+    .glass-card-3d:hover::after {
+      opacity: 1;
     }
 
-    header p {
-      margin: 8px 0;
-      color: #cccccc;
-      font-size: 16px;
+    .glass-card-3d:hover {
+      background: rgba(20, 24, 35, 0.92);
+      border-color: rgba(212, 175, 55, 0.6);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px 2px rgba(212, 175, 55, 0.25);
     }
 
-    .container {
-      max-width: 1150px;
-      margin: auto;
-      padding: 20px;
+    .tilt-depth-1 {
+      transform: translateZ(20px);
+    }
+    .tilt-depth-2 {
+      transform: translateZ(35px);
     }
 
-    section {
-      margin-bottom: 25px;
-      background: linear-gradient(135deg, #050505, #0f0f0f);
-      padding: 25px;
-      border-radius: 12px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      transition: 0.3s;
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #FFF8E1 0%, #FFD54F 35%, #D4AF37 70%, #AA771C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    section:hover {
-      border-color: #d4af37;
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-      transform: translateY(-4px);
+    .gold-glow {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.35);
     }
-
-    h2 {
-      color: #d4af37;
-      margin-bottom: 12px;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-      padding-bottom: 5px;
-    }
-
-    h3 {
-      color: #ffd700;
-      margin-bottom: 5px;
-    }
-
-    ul {
-      padding-left: 20px;
-    }
-
-    li {
-      margin-bottom: 6px;
-    }
-
-    .skills span {
-      display: inline-block;
-      background: #111111;
-      padding: 8px 14px;
-      margin: 6px;
-      border-radius: 6px;
-      font-size: 14px;
-      border: 1px solid rgba(212, 175, 55, 0.4);
-      transition: 0.3s;
-    }
-
-    .skills span:hover {
-      background: #d4af37;
-      color: black;
-      transform: scale(1.05);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: linear-gradient(135deg, #000000, #111111);
-      padding: 18px;
-      border-radius: 10px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      border-color: #d4af37;
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-      transform: translateY(-3px);
-    }
-
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      text-align: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      flex: 1;
-      min-width: 120px;
-    }
-
-    .stat h3 {
-      margin: 0;
-      color: #ffd700;
-      font-size: 28px;
-    }
-
-    .highlight {
-      color: #d4af37;
-      font-weight: bold;
-    }
-
-    a {
-      color: #ffd700;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    a:hover {
-      color: #ffffff;
-    }
-
-    footer {
-      text-align: center;
-      padding: 25px;
-      border-top: 1px solid rgba(212, 175, 55, 0.3);
-      color: #cccccc;
-      background: #000000;
-    }
-
-    .button {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #d4af37, #ffd700);
-      color: black;
-      border-radius: 6px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-
-    .button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
-    }
-
-  
-
-    /* TECH STACK LOGOS */
-    .tech-stack {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 20px;
-      text-align: center;
-    }
-
-    .tech-item {
-      background: #0a0a0a;
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid rgba(212,175,55,0.3);
-      transition: 0.3s;
-    }
-
-    .tech-item:hover {
-      border-color: #d4af37;
-      transform: translateY(-5px);
-      box-shadow: 0 0 15px rgba(212,175,55,0.4);
-    }
-
-    .tech-item img {
-      width: 60px;
-      height: 60px;
-      margin-bottom: 10px;
-    }
-
-    /* ARCHITECTURE IMAGE */
-    .architecture {
-      text-align: center;
-    }
-
-    .architecture img {
-      width: 100%;
-      max-width: 800px;
-      border-radius: 10px;
-      border: 1px solid rgba(212,175,55,0.4);
-      margin-top: 15px;
-    }
-
   </style>
 </head>
-<body>
+<body class="font-sans antialiased selection:bg-gold-500 selection:text-black relative">
 
-<header>
-  <img src="profile.png" alt="Praveen Profile" class="profile-img">
+  <!-- Fixed WebGL Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
 
-  <div class="profile-container">
-    <h1>Praveen C Immanvel</h1>
-    <p>System Administrator |LINUX|WINDOWS|MAC|HY-BRID TECNOLOGY |Infrastructure Engineer|       </p>
-    <p>
-      📧 praveenimmanvelc@gmail.com |
-      📱 +91 7708936284 |
-      📍 CHENNAI, India.
-    </p>
-    <p>
-      <a href="https://github.com/praveenimmanvel" target="_blank">GitHub</a> |
-      <a href="https://www.linkedin.com/in/praveen-c-immanvel-7a417523b" target="_blank">LinkedIn</a>
-    </p>
-    <a class="button" href="https://github.com/praveenimmanvel" target="_blank">Explore My Work</a>
-  </div>
-</header>
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-dark-950/80 backdrop-blur-xl border-b border-gold-500/15 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Brand Logo -->
+        <a href="#about" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-700 flex items-center justify-center font-extrabold text-black text-lg shadow-lg group-hover:scale-105 transition-transform">
+            PI
+          </div>
+          <div class="flex flex-col">
+            <span class="text-base font-extrabold tracking-wider text-white group-hover:text-gold-400 transition-colors">PRAVEEN <span class="text-gold-400">IMMANVEL</span></span>
+            <span class="text-[10px] tracking-widest text-neutral-400 uppercase font-semibold">System & Infrastructure Engineer</span>
+          </div>
+        </a>
 
-<div class="container">
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1 lg:space-x-2 text-sm font-medium text-neutral-300">
+          <a href="#about" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">About</a>
+          <a href="#metrics" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Metrics</a>
+          <a href="#experience" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Experience</a>
+          <a href="#competencies" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Competencies</a>
+          <a href="#tools" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Tools Stack</a>
+          <a href="#certifications" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Certifications</a>
+          <a href="#projects" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Projects</a>
+          <a href="#education" class="px-3 py-2 rounded-lg hover:text-gold-400 hover:bg-gold-500/10 transition">Education</a>
+          <a href="#contact" class="ml-2 px-4 py-2 rounded-lg bg-gold-500/10 border border-gold-500/30 text-gold-400 hover:bg-gold-500 hover:text-black font-semibold transition shadow-sm">Contact Me</a>
+        </div>
 
-<section>
-  <h2>Professional Summary</h2>
-  <p>
-    Results-driven <span class="highlight">System Administrator & Ops Engineer</span>  with over 2+ years of experience managing enterprise Linux, Windows Server, and cloud infrastructure (AWS & Azure). Skilled in automation, infrastructure monitoring, Active Directory, and system security, ensuring high availability and performance across hybrid environments.
-
-Experienced in building CI/CD pipelines using Jenkins and Docker, and automating tasks with Bash and PowerShell to improve operational efficiency. Proven ability to optimize systems, strengthen security, and implement scalable, reliable infrastructure solutions.
-  </p>
-
-  <div class="stats">
-    <div class="stat">
-      <h3>2+</h3>
-      <p>Years Experience</p>
-    </div>
-    <div class="stat">
-      <h3>50+</h3>
-      <p>Servers Managed</p>
-    </div>
-    <div class="stat">
-      <h3>100+</h3>
-      <p>Incidents Resolved</p>
-    </div>
-    <div class="stat">
-      <h3>20+</h3>
-      <p>Automation Scripts</p>
-    </div>
-  </div>
-</section>
-
-<section>
-  <h2>Core Competencies</h2>
-  <div class="skills">
-    <span>Linux Administration</span>
-    <span>AWS Cloud</span>
-    <span>Azure Cloud</span>
-    <span>Kubernetes</span>
-    <span>Docker</span>
-    <span>Jenkins CI/CD</span>
-    <span>Infrastructure Automation</span>
-    <span>Python Automation</span>
-    <span>Bash Scripting</span>
-    <span>PowerShell</span>
-    <span>Active Directory</span>
-    <span>Monitoring & Alerting</span>
-    <span>CloudWatch</span>
-    <span>PRTG Monitoring</span>
-    <span>Security & Hardening</span>
-  </div>
-</section>
-
-<section>
-  <h2>Professional Experience</h2>
-
-  <div class="card">
-    <h3>SYSTEM ADMINISTRATOR</h3>
-    <p><span class="highlight">Intellect Design Arena Ltd</span>                                               |CHN-PUNE|Oct 2024 – FEB 2026|</p>
-    <ul class="experience-list"
-<ul class="experience-list">
-<ul class="experience-list">
-<ul class="experience-section">
-
-  <style>
-  .section-title {
-    font-size: 20px;          /* increased title size */
-    font-weight: bold;
-    margin-top: 18px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-content {
-    font-size: 16.5px;        /* increased content size */
-    line-height: 1.6;
-    margin-left: 34px;
-    margin-bottom: 8px;
-    color: #333;
-  }
-
-  .section-icon {
-    width: 26px;              /* slightly bigger icon */
-    height: 26px;
-  }
-
-  .highlight {
-    font-size: 20px;
-    font-weight: 600;
-    color: #0a66c2;
-  }
-
-  .card h3 {
-    font-size: 19px;
-  }
-
-  .card p {
-    font-size: 16px;
-  }
-</style>
-
-<div class="card">
-  <h3>SYSTEM ADMINISTRATOR</h3>
-  <p>
-    <span class="highlight">Intellect Design Arena Ltd</span> | CHN-PUNE | Oct 2024 – Feb 2026
-  </p>
-
-  <ul class="experience-section">
-
-    <li class="section-title">
-      <img src="https://img.icons8.com/color/48/server.png" class="section-icon">
-      <span class="highlight">🛡️ INFRASTRUCTURE MONITORING & INCIDENT MANAGEMENT</span>
-    </li>
-
-    <li class="section-content">
-      Performed 24/7 monitoring of enterprise networks, Windows and Linux servers, and cloud infrastructure using PRTG, CA Spectrum, Sapphire Agent, and SIEM tools.
-    </li>
-
-    <li class="section-content">
-      Detected, analyzed, and responded to security incidents and system alerts, coordinating with internal teams and ISPs for rapid resolution.
-    </li>
-
-
-    <li class="section-title">
-      <img src="https://img.icons8.com/color/48/combo-chart.png" class="section-icon">
-      <span class="highlight">📊 SYSTEM PERFORMANCE & REPORTING</span>
-    </li>
-
-    <li class="section-content">
-      Monitored CPU, memory, disk, and network performance using SNMP, WMI, SSH, and RDP to ensure uptime and reliability.
-    </li>
-
-    <li class="section-content">
-      Generated infrastructure health, patch compliance, antivirus, and cloud monitoring reports for AWS and Azure environments.
-    </li>
-
-
-    <li class="section-title">
-      <img src="https://img.icons8.com/color/48/system-task.png" class="section-icon">
-      <span class="highlight">🖥️ SYSTEM ADMINISTRATION & SERVICE MANAGEMENT</span>
-    </li>
-
-    <li class="section-content">
-      Managed and maintained critical services including Active Directory, DNS, DHCP, backups, and identity access systems.
-    </li>
-
-    <li class="section-content">
-      Performed patch management, vulnerability remediation, and system hardening to ensure security and stability.
-    </li>
-
-
-    <li class="section-title">
-      <img src="https://img.icons8.com/color/48/network.png" class="section-icon">
-      <span class="highlight">🌐 INCIDENT RESOLUTION & RELIABILITY</span>
-    </li>
-
-    <li class="section-content">
-      Troubleshot infrastructure, network, and application issues to minimize downtime and maintain service availability.
-    </li>
-
-    <li class="section-content">
-      Collaborated with network, security, and application teams to ensure optimal infrastructure performance.
-    </li>
-
-    <li class="section-title">
-    <span class="highlight">⚙️ TOOLS & TECHNOLOGIES</span>
-    </li>
- 
-    <li class="section-content">
-    PRTG, SIEM, CA Spectrum, AWS, Azure, Windows Server, Linux, SNMP, WMI, SSH, RDP, Active Directory.
-    </li>
-
-   </ul>
-
-<section>
-  <h2 style="font-size:24px;">System Administration Projects</h2>
-
-  <div class="grid">
-
-    <div class="card">
-      <h3>CI/CD Pipeline</h3>
-      <p>Automated application deployment pipeline using Jenkins, Docker, and Git.</p>
+        <!-- Mobile Toggle Button -->
+        <button id="mobile-menu-btn" aria-label="Toggle Navigation Menu" class="md:hidden p-2 rounded-lg text-neutral-400 hover:text-gold-400 hover:bg-neutral-800 focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Kubernetes Deployment</h3>
-      <p>Deployed containerized applications and managed Kubernetes clusters.</p>
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden bg-dark-900/95 border-b border-gold-500/20 backdrop-blur-2xl px-4 pt-2 pb-6 space-y-2">
+      <a href="#about" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">About</a>
+      <a href="#metrics" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Metrics</a>
+      <a href="#experience" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Experience</a>
+      <a href="#competencies" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Competencies</a>
+      <a href="#tools" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Tools Stack</a>
+      <a href="#certifications" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Certifications</a>
+      <a href="#projects" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Projects</a>
+      <a href="#education" class="mobile-link block px-3 py-2 rounded-md text-base font-medium text-neutral-200 hover:text-gold-400 hover:bg-gold-500/10">Education</a>
+      <a href="#contact" class="mobile-link block px-3 py-2 rounded-md text-base font-semibold text-gold-400 bg-gold-500/10 border border-gold-500/30">Contact Me</a>
     </div>
+  </nav>
 
-    <div class="card">
-      <h3>Infrastructure Automation</h3>
-      <p>Created automation scripts for system provisioning and monitoring.</p>
+  <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 space-y-24 perspective-container">
+
+    <section id="about" class="pt-4 pb-8 border-b border-neutral-800/80">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <!-- Hero Information -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs font-bold uppercase tracking-wider">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            System Administrator // Infrastructure Engineer
+          </div>
+          
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
+            Architecting Resilient <br/>
+            <span class="gold-gradient-text">Hybrid Infrastructure</span> & Cloud Operations
+          </h1>
+
+          <p class="text-neutral-300 text-base sm:text-lg leading-relaxed max-w-2xl">
+            Proactive IT Infrastructure Engineer based in Chennai, India. Specializing in Windows/Linux Server administration, AWS cloud operations, 24/7 global monitoring centers, and automated DevOps integration.
+          </p>
+
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a href="#contact" class="px-6 py-3 rounded-xl bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 text-black font-extrabold text-sm hover:brightness-110 transition gold-glow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              Initiate Contact
+            </a>
+            <a href="#projects" class="px-6 py-3 rounded-xl glass-card-3d text-white font-semibold text-sm hover:border-gold-500/50 transition flex items-center gap-2">
+              <svg class="w-4 h-4 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+              Explore Infrastructure Projects
+            </a>
+          </div>
+
+          <!-- Contact Metadata Cards Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-neutral-800/80 text-xs">
+            <div class="glass-card-3d p-3 rounded-xl">
+              <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">Location</span>
+              <span class="text-white font-semibold flex items-center gap-1 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                Chennai, India
+              </span>
+            </div>
+            <div class="glass-card-3d p-3 rounded-xl">
+              <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">Direct Phone</span>
+              <a href="tel:+917708936284" class="text-white font-semibold hover:text-gold-400 transition flex items-center gap-1 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                +91 7708936284
+              </a>
+            </div>
+            <div class="glass-card-3d p-3 rounded-xl">
+              <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">GitHub</span>
+              <a href="https://github.com/praveenimmanvel" target="_blank" class="text-white font-semibold hover:text-gold-400 transition flex items-center gap-1 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-gold-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path></svg>
+                praveenimmanvel ↗
+              </a>
+            </div>
+            <div class="glass-card-3d p-3 rounded-xl">
+              <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">LinkedIn</span>
+              <a href="https://www.linkedin.com/in/praveen-c-immanvel-7a417523b" target="_blank" class="text-white font-semibold hover:text-gold-400 transition flex items-center gap-1 mt-0.5">
+                <svg class="w-3.5 h-3.5 text-gold-400" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"></path></svg>
+                praveen-c-immanvel ↗
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Graphic with Frame & Error Fallback -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="relative group glass-card-3d p-4 rounded-full border border-gold-500/30">
+            <div class="absolute -inset-2 bg-gradient-to-r from-gold-400 via-gold-600 to-gold-300 rounded-full blur-xl opacity-30 group-hover:opacity-75 transition duration-500 animate-pulse-slow"></div>
+            
+            <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-full p-2 bg-dark-900 border-2 border-gold-500/50 shadow-2xl overflow-hidden">
+              <img src="profile.png" onerror="this.onerror=null; this.src='Profile.jpg';" alt="Praveen C Immanvel" class="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition duration-500" />
+            </div>
+
+            <!-- Floating Badges -->
+            <div class="absolute -bottom-2 -left-6 glass-card-3d border border-gold-500/40 rounded-xl p-3 shadow-2xl animate-float tilt-depth-2">
+              <div class="flex items-center gap-2">
+                <div class="p-2 rounded-lg bg-gold-500/10 text-gold-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <div>
+                  <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">Primary Focus</span>
+                  <span class="font-bold text-white text-xs">Hybrid Infrastructure</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="absolute -top-2 -right-6 glass-card-3d border border-gold-500/40 rounded-xl p-3 shadow-2xl animate-float tilt-depth-2" style="animation-delay: 2s;">
+              <div class="flex items-center gap-2">
+                <div class="p-2 rounded-lg bg-gold-500/10 text-gold-400">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                </div>
+                <div>
+                  <span class="text-neutral-400 block text-[10px] uppercase font-bold tracking-wider">Cloud Operations</span>
+                  <span class="font-bold text-gold-400 text-xs">AWS Enterprise & Azure</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="metrics" class="space-y-8">
+      <div class="border-b border-neutral-800/80 pb-4">
+        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Track Record ]</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Professional Summary & Key Metrics</h2>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 text-center space-y-2">
+          <span class="text-3xl sm:text-4xl font-extrabold gold-gradient-text block">2.5+</span>
+          <span class="text-xs font-bold uppercase text-neutral-300 tracking-wider">Years Experience</span>
+          <p class="text-[11px] text-neutral-400">Hands-on SysAdmin & Infra Operations</p>
+        </div>
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 text-center space-y-2">
+          <span class="text-3xl sm:text-4xl font-extrabold gold-gradient-text block">24/7</span>
+          <span class="text-xs font-bold uppercase text-neutral-300 tracking-wider">GMC Operations</span>
+          <p class="text-[11px] text-neutral-400">Enterprise Monitoring & Telemetry</p>
+        </div>
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 text-center space-y-2">
+          <span class="text-3xl sm:text-4xl font-extrabold gold-gradient-text block">100+</span>
+          <span class="text-xs font-bold uppercase text-neutral-300 tracking-wider">Incidents Resolved</span>
+          <p class="text-[11px] text-neutral-400">Level 2/3 RCA & Server Outages</p>
+        </div>
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 text-center space-y-2">
+          <span class="text-3xl sm:text-4xl font-extrabold gold-gradient-text block">20+</span>
+          <span class="text-xs font-bold uppercase text-neutral-300 tracking-wider">Automation Scripts</span>
+          <p class="text-[11px] text-neutral-400">Bash, PowerShell & Jenkins Pipelines</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" class="space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
+        <div>
+          <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Career Progression ]</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Work Experience</h2>
+        </div>
+        <p class="text-neutral-400 text-sm max-w-md">Chronological breakdown across enterprise system administration and monitoring center operations.</p>
+      </div>
+
+      <div class="relative border-l-2 border-gold-500/20 ml-3 sm:ml-6 space-y-10 pl-6 sm:pl-8">
+
+        <!-- Role 1: CES Ltd -->
+        <div class="relative group">
+          <div class="absolute -left-[31px] sm:-left-[39px] top-1.5 w-5 h-5 rounded-full bg-dark-950 border-2 border-gold-400 flex items-center justify-center group-hover:scale-125 transition-transform">
+            <div class="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></div>
+          </div>
+
+          <div class="glass-card-3d rounded-2xl p-6 sm:p-8 border border-neutral-800">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 tilt-depth-1">
+              <div>
+                <h3 class="text-xl font-bold text-white group-hover:text-gold-400 transition-colors">Junior System Administrator</h3>
+                <p class="text-gold-400/90 font-medium text-sm flex items-center gap-2 mt-0.5">
+                  <span>CES Ltd</span>
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-neutral-400 text-xs">Chennai, India</span>
+                </p>
+              </div>
+              <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-gold-500/10 text-gold-400 border border-gold-500/30">
+                March 2026 – Present
+              </span>
+            </div>
+
+            <ul class="space-y-2.5 text-neutral-300 text-sm list-disc list-inside marker:text-gold-400 tilt-depth-1">
+              <li>Manage and optimize enterprise Linux & Windows Server infrastructure, guaranteeing high availability and robust uptime across hybrid data centers.</li>
+              <li>Configure Active Directory domains, Group Policy Objects (GPOs), DNS, DHCP, and role-based access security controls.</li>
+              <li>Oversee AWS Cloud EC2 deployments, S3 storage management, IAM policy frameworks, and VPC security groups.</li>
+              <li>Develop custom PowerShell and Bash automation scripts for routine administrative tasks and system patching schedules.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Role 2: Intellect Design Arena Ltd -->
+        <div class="relative group">
+          <div class="absolute -left-[31px] sm:-left-[39px] top-1.5 w-5 h-5 rounded-full bg-dark-950 border-2 border-gold-400/70 flex items-center justify-center group-hover:scale-125 transition-transform">
+            <div class="w-1.5 h-1.5 rounded-full bg-gold-400"></div>
+          </div>
+
+          <div class="glass-card-3d rounded-2xl p-6 sm:p-8 border border-neutral-800">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 tilt-depth-1">
+              <div>
+                <h3 class="text-xl font-bold text-white group-hover:text-gold-400 transition-colors">IT Operations & Administrator</h3>
+                <p class="text-gold-400/90 font-medium text-sm flex items-center gap-2 mt-0.5">
+                  <span>Intellect Design Arena Ltd</span>
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-neutral-400 text-xs">Enterprise IT Operations</span>
+                </p>
+              </div>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700">
+                Oct 2024 – Feb 2026
+              </span>
+            </div>
+
+            <ul class="space-y-2.5 text-neutral-300 text-sm list-disc list-inside marker:text-gold-400 tilt-depth-1">
+              <li>Administered mission-critical corporate infrastructure, handling server deployments, network equipment maintenance, and identity management.</li>
+              <li>Executed Level 2/3 technical incident troubleshooting, collaborating with cross-functional network and security teams to resolve complex outages.</li>
+              <li>Enforced server security compliance standards, OS hardening policies, and enterprise anti-virus/endpoint protection software.</li>
+              <li>Maintained comprehensive documentation for infrastructure architecture, system configurations, and disaster recovery runbooks.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Role 3: Global Monitoring Center -->
+        <div class="relative group">
+          <div class="absolute -left-[31px] sm:-left-[39px] top-1.5 w-5 h-5 rounded-full bg-dark-950 border-2 border-gold-400/40 flex items-center justify-center group-hover:scale-125 transition-transform">
+            <div class="w-1.5 h-1.5 rounded-full bg-gold-500"></div>
+          </div>
+
+          <div class="glass-card-3d rounded-2xl p-6 sm:p-8 border border-neutral-800">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 tilt-depth-1">
+              <div>
+                <h3 class="text-xl font-bold text-white group-hover:text-gold-400 transition-colors">Global Monitoring Center Engineer</h3>
+                <p class="text-gold-400/90 font-medium text-sm flex items-center gap-2 mt-0.5">
+                  <span>GMC GEO DCs</span>
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-neutral-400 text-xs">24/7 Monitoring Operations</span>
+                </p>
+              </div>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700">
+                March 2024 – Sept 2024
+              </span>
+            </div>
+
+            <ul class="space-y-2.5 text-neutral-300 text-sm list-disc list-inside marker:text-gold-400 tilt-depth-1">
+              <li>Executed 24x7 real-time telemetry monitoring for global enterprise servers, network backbones, and application microservices across geographic DCs.</li>
+              <li>Leveraged monitoring suites (Zabbix, Grafana, Nagios, AWS CloudWatch) to detect system anomalies prior to operational failure.</li>
+              <li>Managed major incident escalation workflows, performing initial triage and documenting thorough Root Cause Analysis (RCA) reports.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="competencies" class="space-y-8">
+      <div class="border-b border-neutral-800/80 pb-4">
+        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Technical Capabilities ]</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Competencies & Expertise</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="glass-card-3d p-6 rounded-2xl border border-neutral-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 tilt-depth-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white tilt-depth-1">System Administration</h3>
+          <p class="text-xs text-neutral-400 leading-relaxed tilt-depth-1">Linux (RHEL/Ubuntu) & Windows Server, Active Directory, GPO creation, DNS/DHCP, and LVM storage management.</p>
+          <div class="flex flex-wrap gap-1.5 pt-2 tilt-depth-1">
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">Active Directory</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">GPO Management</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">DNS & DHCP</span>
+          </div>
+        </div>
+
+        <div class="glass-card-3d p-6 rounded-2xl border border-neutral-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 tilt-depth-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 001-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white tilt-depth-1">Cloud Architecture</h3>
+          <p class="text-xs text-neutral-400 leading-relaxed tilt-depth-1">Designing resilient cloud topologies on AWS & Azure, EC2/VM setup, IAM roles, storage, and Virtual Networks.</p>
+          <div class="flex flex-wrap gap-1.5 pt-2 tilt-depth-1">
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">AWS EC2/S3</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">Azure VMs</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">VPC Security</span>
+          </div>
+        </div>
+
+        <div class="glass-card-3d p-6 rounded-2xl border border-neutral-800 space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 tilt-depth-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white tilt-depth-1">DevOps & Automation</h3>
+          <p class="text-xs text-neutral-400 leading-relaxed tilt-depth-1">Containerizing applications via Docker, Kubernetes orchestration, Jenkins pipelines, and custom scripting.</p>
+          <div class="flex flex-wrap gap-1.5 pt-2 tilt-depth-1">
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">Docker</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">Jenkins CI/CD</span>
+            <span class="px-2.5 py-1 rounded-md bg-dark-900 border border-neutral-700 text-[11px] text-neutral-300">Bash / PowerShell</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tools" class="space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
+        <div>
+          <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Ecosystem ]</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Tools & Stack</h2>
+        </div>
+        <p class="text-neutral-400 text-sm max-w-md">Industry-standard tools utilized for enterprise server administration, security, and cloud automation.</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" class="w-8 h-8 object-contain" alt="Linux Tux Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Linux (Tux)</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" class="w-8 h-8 object-contain" alt="Windows Server Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Windows Server</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg" class="w-8 h-8 object-contain" alt="AWS Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">AWS Cloud</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" class="w-8 h-8 object-contain" alt="Azure Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Microsoft Azure</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" class="w-8 h-8 object-contain" alt="Docker Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Docker</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg" class="w-8 h-8 object-contain" alt="Kubernetes Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Kubernetes</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg" class="w-8 h-8 object-contain" alt="Jenkins Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Jenkins CI/CD</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg" class="w-8 h-8 object-contain" alt="Bash Scripting Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Bash Scripting</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/powershell/powershell-original.svg" class="w-8 h-8 object-contain" alt="PowerShell Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">PowerShell</span>
+        </div>
+
+        <div class="glass-card-3d rounded-xl p-5 text-center flex flex-col items-center justify-center space-y-3 group">
+          <div class="w-12 h-12 flex items-center justify-center p-2 rounded-lg bg-dark-900/90 border border-neutral-700 group-hover:border-gold-400/50 transition tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" class="w-8 h-8 object-contain" alt="Python Logo">
+          </div>
+          <span class="text-xs font-bold text-white group-hover:text-gold-400 transition tilt-depth-1">Python</span>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="certifications" class="space-y-8">
+      <div class="border-b border-neutral-800/80 pb-4">
+        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Credentials ]</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Certifications & Training</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Cisco Academy -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cisco/cisco-original.svg" class="w-9 h-9 object-contain" alt="Cisco Logo" onerror="this.onerror=null; this.src='https://cdn.simpleicons.org/cisco/005073';">
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">Cisco Networking Academy</span>
+            <h3 class="text-base font-bold text-white">Cybersecurity & Networking</h3>
+            <p class="text-xs text-neutral-400">Enterprise Network Routing, Security Policies & Threat Defense.</p>
+          </div>
+        </div>
+
+        <!-- Microsoft Azure -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" class="w-8 h-8 object-contain" alt="Azure Logo">
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">Microsoft Certification</span>
+            <h3 class="text-base font-bold text-white">Azure Data Fundamentals</h3>
+            <p class="text-xs text-neutral-400">Cloud Relational/Non-Relational Data Concepts & Security.</p>
+          </div>
+        </div>
+
+        <!-- EC-Council -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 text-red-500 font-black text-xl tilt-depth-1">
+            <img src="https://cdn.simpleicons.org/ec-council/E31B23" class="w-8 h-8 object-contain" alt="EC-Council Logo" onerror="this.onerror=null; this.outerHTML='<span class=\'text-red-500 font-bold\'>EC</span>';">
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">EC-Council</span>
+            <h3 class="text-base font-bold text-white">Ethical Hacking Essentials</h3>
+            <p class="text-xs text-neutral-400">System Hardening, Vulnerability Assessment & Pen-Testing.</p>
+          </div>
+        </div>
+
+        <!-- IBM Threat Hunting -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 tilt-depth-1">
+            <img src="https://cdn.simpleicons.org/ibm/052FAD" class="w-8 h-8 object-contain" alt="IBM Logo">
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">IBM Global Skill</span>
+            <h3 class="text-base font-bold text-white">Threat Hunting & Cyber Intelligence</h3>
+            <p class="text-xs text-neutral-400">Active Threat Mitigation, SIEM Analytics & Incident Response.</p>
+          </div>
+        </div>
+
+        <!-- Novi Tech Full Stack Dev -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 text-emerald-400 font-bold text-sm tilt-depth-1">
+            NOVI
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">Novi Tech R&D</span>
+            <h3 class="text-base font-bold text-white">Full Stack Web Development</h3>
+            <p class="text-xs text-neutral-400">Automated Pipeline Integrations & Full Stack Architecture.</p>
+          </div>
+        </div>
+
+        <!-- Linux Foundation -->
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex gap-4 items-start">
+          <div class="w-14 h-14 rounded-xl bg-dark-900 border border-neutral-700 flex items-center justify-center p-2 flex-shrink-0 tilt-depth-1">
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" class="w-8 h-8 object-contain" alt="Linux Foundation">
+          </div>
+          <div class="space-y-1 tilt-depth-1">
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-wider block">Linux Foundation</span>
+            <h3 class="text-base font-bold text-white">Linux Systems Engineering (Ongoing)</h3>
+            <p class="text-xs text-neutral-400">Advanced Enterprise Administration, Kernel Parameters & Storage.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="education" class="space-y-8">
+      <div class="border-b border-neutral-800/80 pb-4">
+        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Education ]</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Academic Background</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+            </div>
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-widest block">Post Graduate Degree</span>
+            <h3 class="text-lg font-bold text-white">MCA (Master of Computer Applications)</h3>
+            <p class="text-xs text-neutral-300">Rathinam College of Arts and Science • <span class="text-gold-400 font-semibold">Ongoing</span></p>
+            <p class="text-xs text-neutral-400 leading-relaxed">Advanced study in distributed system architecture, enterprise network security, and cloud technologies.</p>
+          </div>
+        </div>
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 01-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+            </div>
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-widest block">Undergraduate Degree</span>
+            <h3 class="text-lg font-bold text-white">BCA (Bachelor of Computer Applications)</h3>
+            <p class="text-xs text-neutral-300">Rathinam College of Arts and Science • <span class="text-gold-400 font-semibold">Graduated 2023</span></p>
+            <p class="text-xs text-neutral-400 leading-relaxed">Solid foundation in computer networking, operating system kernels, databases, and software fundamentals.</p>
+          </div>
+        </div>
+
+        <div class="glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="w-12 h-12 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V11m0 0V5a2 2 0 012-2h2a2 2 0 012 2v6m-4 0h4"></path></svg>
+            </div>
+            <span class="text-[10px] font-extrabold text-gold-400 uppercase tracking-widest block">Higher Secondary</span>
+            <h3 class="text-lg font-bold text-white">Higher Secondary Education (12th)</h3>
+            <p class="text-xs text-neutral-300">St. Joseph's Higher Secondary School • <span class="text-gold-400 font-semibold">Completed 2020</span></p>
+            <p class="text-xs text-neutral-400 leading-relaxed">Higher secondary technical foundation in mathematics, science, and computer technology basics.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="projects" class="space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-800/80 pb-4">
+        <div>
+          <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Portfolio Highlights ]</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Projects & Competencies</h2>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap gap-2" id="project-filters">
+          <button data-filter="all" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gold-500 text-black shadow-sm">All</button>
+          <button data-filter="cloud" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-800 text-neutral-300 hover:text-white">Cloud</button>
+          <button data-filter="devops" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-800 text-neutral-300 hover:text-white">DevOps</button>
+          <button data-filter="sysadmin" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-800 text-neutral-300 hover:text-white">SysAdmin</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div class="project-card glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4" data-category="cloud">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="flex justify-between items-start">
+              <span class="px-2.5 py-1 rounded-md bg-gold-500/10 text-gold-400 text-[10px] font-bold uppercase tracking-wider border border-gold-500/20">AWS Cloud</span>
+              <span class="text-xs text-neutral-500 font-mono">PROJ-01</span>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-gold-400 transition">High Availability AWS Web Architecture</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">Configured multi-AZ EC2 instances behind an Application Load Balancer with Auto Scaling and RDS MySQL multi-AZ database replication.</p>
+          </div>
+          <div class="space-y-3 pt-3 border-t border-neutral-800/80 tilt-depth-1">
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">AWS EC2</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">VPC</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">ALB</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">RDS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4" data-category="devops">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="flex justify-between items-start">
+              <span class="px-2.5 py-1 rounded-md bg-gold-500/10 text-gold-400 text-[10px] font-bold uppercase tracking-wider border border-gold-500/20">CI/CD Automation</span>
+              <span class="text-xs text-neutral-500 font-mono">PROJ-02</span>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-gold-400 transition">Jenkins Dockerized Container Pipeline</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">Constructed automated Jenkins CI/CD pipelines triggering continuous build, Docker image packaging, and static security scans on GitHub webhooks.</p>
+          </div>
+          <div class="space-y-3 pt-3 border-t border-neutral-800/80 tilt-depth-1">
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">Jenkins</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">Docker</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">GitHub</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card glass-card-3d rounded-2xl p-6 border border-neutral-800 flex flex-col justify-between space-y-4" data-category="sysadmin">
+          <div class="space-y-3 tilt-depth-1">
+            <div class="flex justify-between items-start">
+              <span class="px-2.5 py-1 rounded-md bg-gold-500/10 text-gold-400 text-[10px] font-bold uppercase tracking-wider border border-gold-500/20">System Security</span>
+              <span class="text-xs text-neutral-500 font-mono">PROJ-03</span>
+            </div>
+            <h3 class="text-lg font-bold text-white group-hover:text-gold-400 transition">Enterprise Active Directory Migration</h3>
+            <p class="text-xs text-neutral-400 leading-relaxed">Migrated legacy Windows Domain Controllers to Server 2022 schema, establishing fine-grained GPO policy objects and automated PowerShell backups.</p>
+          </div>
+          <div class="space-y-3 pt-3 border-t border-neutral-800/80 tilt-depth-1">
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">Windows Server</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">Active Directory</span>
+              <span class="text-[10px] px-2 py-0.5 rounded bg-dark-900 text-neutral-300 border border-neutral-700">PowerShell</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="contact" class="space-y-8">
+      <div class="border-b border-neutral-800/80 pb-4">
+        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">[ Connect ]</span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">Get In Touch</h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div class="lg:col-span-5 space-y-6">
+          <div class="glass-card-3d rounded-2xl p-6 sm:p-8 border border-neutral-800 space-y-6">
+            <h3 class="text-xl font-bold text-white tilt-depth-1">Contact Information</h3>
+            <p class="text-xs text-neutral-300 leading-relaxed tilt-depth-1">Available for full-time roles and engineering consulting in Systems Engineering, Cloud Operations, and DevOps Infrastructure.</p>
+
+            <div class="space-y-4 tilt-depth-1">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                </div>
+                <div>
+                  <span class="text-neutral-400 block text-[10px] font-bold uppercase">Phone</span>
+                  <a href="tel:+917708936284" class="text-sm font-semibold text-white hover:text-gold-400 transition">+91 7708936284</a>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 flex-shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                </div>
+                <div>
+                  <span class="text-neutral-400 block text-[10px] font-bold uppercase">Location</span>
+                  <span class="text-sm font-semibold text-white">Chennai, Tamil Nadu, India</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <form id="contact-form" class="glass-card-3d rounded-2xl p-6 sm:p-8 border border-neutral-800 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 tilt-depth-1">
+              <div>
+                <label class="block text-xs font-bold text-neutral-300 uppercase mb-1">Your Name</label>
+                <input type="text" required placeholder="John Doe" class="w-full px-4 py-2.5 rounded-xl bg-dark-900 border border-neutral-700 text-white text-sm focus:border-gold-400 focus:outline-none transition">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-neutral-300 uppercase mb-1">Your Email</label>
+                <input type="email" required placeholder="john@company.com" class="w-full px-4 py-2.5 rounded-xl bg-dark-900 border border-neutral-700 text-white text-sm focus:border-gold-400 focus:outline-none transition">
+              </div>
+            </div>
+            <div class="tilt-depth-1">
+              <label class="block text-xs font-bold text-neutral-300 uppercase mb-1">Subject</label>
+              <input type="text" required placeholder="Infrastructure Requirement Inquiry" class="w-full px-4 py-2.5 rounded-xl bg-dark-900 border border-neutral-700 text-white text-sm focus:border-gold-400 focus:outline-none transition">
+            </div>
+            <div class="tilt-depth-1">
+              <label class="block text-xs font-bold text-neutral-300 uppercase mb-1">Message</label>
+              <textarea rows="4" required placeholder="Describe your project or position details..." class="w-full px-4 py-2.5 rounded-xl bg-dark-900 border border-neutral-700 text-white text-sm focus:border-gold-400 focus:outline-none transition resize-none"></textarea>
+            </div>
+
+            <div id="form-status" class="hidden p-3 rounded-xl text-xs font-bold text-center"></div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 text-black font-extrabold text-sm hover:brightness-110 transition gold-glow tilt-depth-1">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="relative z-10 border-t border-neutral-800/80 bg-dark-950/90 py-8 text-center text-xs text-neutral-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© 2026 Praveen C Immanvel. All Rights Reserved.</p>
+      <div class="flex gap-4 text-neutral-400">
+        <a href="#about" class="hover:text-gold-400 transition">Back to top ↑</a>
+      </div>
     </div>
+  </footer>
 
-    <div class="card">
-      <h3>Cloud Monitoring System</h3>
-      <p>Implemented monitoring and alerting using AWS CloudWatch.</p>
-    </div>
+  <script>
+    // Robust Three.js WebGL Scene Initialization wrapped safely
+    window.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.getElementById('bg-canvas');
+      if (!canvas || typeof THREE === 'undefined') {
+        console.warn('Three.js library or canvas element not available.');
+        return;
+      }
 
-  </div>
-</section>
-  </div>
+      let renderer, scene, camera;
 
-</section>
+      try {
+        renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      } catch (e) {
+        console.error('WebGL Context initialization failed: ', e);
+        return;
+      }
 
-<section>
-  <h2>Tools & Technologies</h2>
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x030305, 0.95);
 
-  <div class="tech-stack">
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 45;
 
-    <div class="tech-item">
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg">
-  <div>Linux</div>
-  </div>
-  <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg">
-      <div>AWS</div>
-    </div>
+      // 1. Rotating Wireframe 3D Server Rack / Cube Structure
+      const serverGroup = new THREE.Group();
+      
+      const rackGeo = new THREE.BoxGeometry(14, 26, 14);
+      const rackMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37, wireframe: true, transparent: true, opacity: 0.35 });
+      const rackMesh = new THREE.Mesh(rackGeo, rackMat);
+      serverGroup.add(rackMesh);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg">
-      <div>Azure</div>
-    </div>
+      for (let i = -10; i <= 10; i += 3.5) {
+        const shelfGeo = new THREE.BoxGeometry(13, 1.8, 13);
+        const shelfMat = new THREE.MeshBasicMaterial({ color: 0xFFD700, wireframe: true, transparent: true, opacity: 0.3 });
+        const shelfMesh = new THREE.Mesh(shelfGeo, shelfMat);
+        shelfMesh.position.y = i;
+        serverGroup.add(shelfMesh);
+      }
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg">
-      <div>Docker</div>
-    </div>
+      serverGroup.position.set(26, -2, -15);
+      scene.add(serverGroup);
 
-    <div class="tech-item">
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg">
-  <div>Networking</div>
-</div>
+      // 2. Orbiting Geometric Polyhedrons (Icosahedron & Octahedron)
+      const polyGroup = new THREE.Group();
+      
+      const icoGeo = new THREE.IcosahedronGeometry(7, 1);
+      const icoMat = new THREE.MeshBasicMaterial({ color: 0xFFD700, wireframe: true, transparent: true, opacity: 0.25 });
+      const icoMesh = new THREE.Mesh(icoGeo, icoMat);
+      polyGroup.add(icoMesh);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg">
-      <div>Kubernetes</div>
-    </div>
+      const octaGeo = new THREE.OctahedronGeometry(5, 0);
+      const octaMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37, wireframe: true, transparent: true, opacity: 0.3 });
+      const octaMesh = new THREE.Mesh(octaGeo, octaMat);
+      octaMesh.position.set(12, 10, -5);
+      polyGroup.add(octaMesh);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg">
-      <div>Jenkins</div>
-    </div>
+      polyGroup.position.set(-28, 10, -18);
+      scene.add(polyGroup);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg">
-      <div>GitHub Actions</div>
-    </div>
+      // 3. Animated Constellation Nodes & Dynamic Connecting Lines
+      const nodeCount = 65;
+      const nodes = [];
+      const nodeGeo = new THREE.SphereGeometry(0.35, 8, 8);
+      const nodeMat = new THREE.MeshBasicMaterial({ color: 0xD4AF37, transparent: true, opacity: 0.8 });
+      const nodesGroup = new THREE.Group();
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg">
-      <div>Linux</div>
-    </div>
+      for (let i = 0; i < nodeCount; i++) {
+        const mesh = new THREE.Mesh(nodeGeo, nodeMat);
+        mesh.position.set(
+          (Math.random() - 0.5) * 110,
+          (Math.random() - 0.5) * 110,
+          (Math.random() - 0.5) * 50
+        );
+        mesh.userData = {
+          velocity: new THREE.Vector3(
+            (Math.random() - 0.5) * 0.04,
+            (Math.random() - 0.5) * 0.04,
+            (Math.random() - 0.5) * 0.02
+          )
+        };
+        nodes.push(mesh);
+        nodesGroup.add(mesh);
+      }
+      scene.add(nodesGroup);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg">
-      <div>Windows Server</div>
-    </div>
+      // Dynamic Line Material for Constellation Mesh (Corrected to LineBasicMaterial)
+      const linesGeo = new THREE.BufferGeometry();
+      const linesMat = new THREE.LineBasicMaterial({ color: 0xD4AF37, transparent: true, opacity: 0.15 });
+      const linesMesh = new THREE.LineSegments(linesGeo, linesMat);
+      scene.add(linesMesh);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg">
-      <div>Bash</div>
-    </div>
+      // Window Resize Listener
+      window.addEventListener('resize', onWindowResize, false);
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg">
-      <div>Python</div>
-    </div>
+      function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      }
 
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/powershell/powershell-original.svg">
-      <div>PowerShell</div>
-    </div>
+      // Mouse Parallax Effect
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+      });
 
-    <div class="tech-item">
-      <img src="https://img.icons8.com/color/96/server.png">
-      <div>Monitoring (PRTG / SIEM / CloudWatch)</div>
-    </div>
+      // Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
 
-  </div>
-</section>
-<section>
-  <h2>Certifications</h2>
+        // Rotate structures
+        serverGroup.rotation.x += 0.002;
+        serverGroup.rotation.y += 0.004;
 
-  <div class="tech-stack">
+        polyGroup.rotation.x -= 0.003;
+        polyGroup.rotation.y += 0.005;
 
-    <!-- Cisco -->
-    <div class="tech-item">
-      <img src="https://img.icons8.com/color/96/networking-manager.png" alt="Cisco">
-      <div>Cisco Networking Academy<br>Introduction to Cybersecurity</div>
-    </div>
+        // Move Constellation Nodes
+        const linePositions = [];
+        for (let i = 0; i < nodeCount; i++) {
+          const node = nodes[i];
+          node.position.add(node.userData.velocity);
 
-    <!-- Azure -->
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" alt="Azure">
-      <div>Microsoft Certified (2023)<br>Azure Data Fundamentals</div>
-    </div>
+          // Bounce off bounds
+          if (Math.abs(node.position.x) > 55) node.userData.velocity.x *= -1;
+          if (Math.abs(node.position.y) > 55) node.userData.velocity.y *= -1;
+          if (Math.abs(node.position.z) > 25) node.userData.velocity.z *= -1;
 
-    <!-- Ethical Hacking -->
-    <div class="tech-item">
-      <img src="https://img.icons8.com/color/96/cyber-security.png" alt="Security">
-      <div>Ethical Hacking Essentials<br>(EHE – Level 1)</div>
-    </div>
+          // Connect nearby nodes
+          for (let j = i + 1; j < nodeCount; j++) {
+            const nodeB = nodes[j];
+            const dist = node.position.distanceTo(nodeB.position);
+            if (dist < 18) {
+              linePositions.push(
+                node.position.x, node.position.y, node.position.z,
+                nodeB.position.x, nodeB.position.y, nodeB.position.z
+              );
+            }
+          }
+        }
 
-    <div class="tech-item">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM">
-  <div>IBM<br>Penetration Testing, Threat Hunting, Cryptography</div>
-</div>
-    <!-- Full Stack -->
-    <div class="tech-item">
-      <img src="https://img.icons8.com/color/96/source-code.png" alt="Development">
-      <div>Full Stack Development<br>Novi Tech Ltd</div>
-    </div>
+        linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
 
-    <!-- Linux -->
-    <div class="tech-item">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" alt="Linux">
-      <div>Linux Foundation<br>(Ongoing)</div>
-    </div>
+        // Smooth Camera Follow
+        camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+        camera.position.y += (-mouseY * 5 - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
 
-  </div>
-</section>
-<section>
-  <h2>Education</h2>
-  <p><strong>BACHELORS IN COMPUTERSCINCE</strong></p>
-  <p>RATHINAM COLLEGE OF ARTS AND SCIENCE  |CBE - 2023| </p>
-  <p><strong>MATHAMETICS WITH SCIENCE</strong></p>
-  <p>ST. JOSEPH'S HR SEC SCHOOL</S>  |OOTY - 2020|</p>
-</section>
+        renderer.render(scene, camera);
+      }
 
-<section>
-  <h2>Contact</h2>
-  <p>Email: praveenimmanvelc@gmail.com</p>
-  <p>Phone: +91 7708936284</p>
-  <p>Location: Chennai, India</p>
-</section>
+      animate();
+    });
 
-</div>
+    // 3D Card Hover Tilt Controller
+    const tiltCards = document.querySelectorAll('.glass-card-3d');
+    tiltCards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
 
-<footer>
-  © 2026 Praveen C Immanvel | System Administrator | Golden Black Portfolio
-</footer>
+        const rotateX = ((y - centerY) / centerY) * -10;
+        const rotateY = ((x - centerX) / centerX) * 10;
 
+        card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(10px)`;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)`;
+      });
+    });
+
+    // Mobile Navigation Controller
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    if (mobileBtn && mobileMenu) {
+      mobileBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      mobileLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+        });
+      });
+    }
+
+    // Category Filter Controls
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.getAttribute('data-filter');
+
+        filterBtns.forEach(b => {
+          b.classList.remove('bg-gold-500', 'text-black');
+          b.classList.add('bg-neutral-800', 'text-neutral-300');
+        });
+
+        btn.classList.add('bg-gold-500', 'text-black');
+        btn.classList.remove('bg-neutral-800', 'text-neutral-300');
+
+        projectCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Form Transmission Demo
+    const contactForm = document.getElementById('contact-form');
+    const formStatus = document.getElementById('form-status');
+
+    if (contactForm && formStatus) {
+      contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        formStatus.classList.remove('hidden');
+        formStatus.classList.add('bg-gold-500/20', 'text-gold-400', 'border', 'border-gold-500/30');
+        formStatus.textContent = 'Message sent successfully! Praveen will get back to you soon.';
+        
+        contactForm.reset();
+
+        setTimeout(() => {
+          formStatus.classList.add('hidden');
+        }, 5000);
+      });
+    }
+  </script>
 </body>
 </html>
